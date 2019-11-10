@@ -50,7 +50,7 @@ Once each sentence prefix has been converted to a padded tensor, each sentence i
 
 ## Hyperparameters
 
-The batched training data produced fairly low loss values even at a learning rate of 0.1. The single instance training, however, stopped learning at this lr and was therefore trained at lr=0.01.
+The batched training data produced fairly low loss values even at a learning rate of 0.01. The single instance training, however, stopped learning at this lr (on a loss of ~28) and was therefore trained at lr=00.01.
 
 There are three different loss modes: mode 1 is "vanilla" NLLL, mode 2 is the former with penalization by 1/100 of the prefix length and mode 3 means penalization by the full prefix length. They are specified like so in the code:
 
@@ -69,7 +69,20 @@ if loss_mode == 3:
 ## Evaluation
 The evaluation script uses a non shuffled version of the DataLoader with a batch size of 100 to get the 100 prefixes per sentence.
 
-*For some reason this script works fine in a Jupyter notebook but gives different outcomes when run from the command line.*
+There are two possible evaluation modes; 1 and 2.
+
+### eval_mode 1:
+* At which prefix length the model scored a hit
+* The overall accuracy (if the correct class was ever in the top of the predictions)
+* The number of characters until hit score for each sentence
+
+### eval_mode 2:
+* Total amount of complete failures
+* Average prefix length until hit score
+
+The average number of characters until hit score is calculated over the amount of sentences where the model makes a correct prediction, i.e. the total failures are not counted.
+
+*For some reason this script works fine in a Jupyter notebook but gives different outcomes when run from the command line. This type of behaviour suggests that the model is not actually in eval mode while evaluating. *
 
 ## Outcome
 Minibatching sped up the training process by hours (the training times were not timed, but feel free to try and see ;)). It is possible that this process could be sped up with the use of packing.
@@ -77,8 +90,7 @@ Minibatching sped up the training process by hours (the training times were not 
 ### model: trained = trained_batches 20 epochs, loss_mode 1
 
 ```
-Overall accuracy:
-35.0 %
+Overall accuracy: 35.0 %
 
 Total amounts of complete failures: 29
 
