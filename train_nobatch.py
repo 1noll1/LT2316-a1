@@ -23,6 +23,8 @@ def train_wobatch(model, dataset, num_epochs, dev, train_loader, loss_mode=1):
                 loss = criterion(y_pred, label)
             if loss_mode == 2:
                 loss = criterion(y_pred, label) * (len(y_pred.nonzero()/100))
+            if loss_mode == 3:
+                loss = criterion(y_pred, label) * len(y_pred.nonzero())
             losses += loss.item()
             optimizer.zero_grad()
             loss.backward()
@@ -31,4 +33,3 @@ def train_wobatch(model, dataset, num_epochs, dev, train_loader, loss_mode=1):
                 print('Average loss at epoch {}: {}'.format(epoch, losses/i))
     print('Training complete.')
     return model
-

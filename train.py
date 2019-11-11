@@ -20,6 +20,9 @@ def trained_batches(model, num_epochs, dev, train_loader, loss_mode=1):
             if loss_mode == 2:
                 # penalize by the prefix length
                 loss = criterion(y_pred, labels) * (len(y_pred.nonzero()))/100 
+            if loss_mode == 3:
+                # penalize by 1/100 of the prefix length
+                loss = criterion(y_pred, labels) * len(y_pred.nonzero())
             losses.append(loss.item())
             optimizer.zero_grad()
             loss.backward()
@@ -28,4 +31,3 @@ def trained_batches(model, num_epochs, dev, train_loader, loss_mode=1):
                 print('Average loss at epoch {}: {}'.format(epoch, sum(losses)/i))
     print('Training complete.')
     return model
-
