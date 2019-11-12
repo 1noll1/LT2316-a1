@@ -13,11 +13,11 @@ The following 10 languages were chosen for training and evaluation:
 | Polish      | pol           |
 | Rusyn       | rue           |
 | Swedish     | swe           |
-| Norwegian   | nnol          |
+| Norwegian   | nno           |
 | English     | eng           |
 | Old English | ang           |
 
-If you wish to train on these languages or evaluate the trained models in this repo, add --langs 'ukr' 'rus' 'bul' 'bel' 'pol' 'rue' 'swe' 'nnol' 'eng' 'ang' when running the script.
+If you wish to train on these languages or evaluate the trained models in this repo, add --langs 'ukr' 'rus' 'bul' 'bel' 'pol' 'rue' 'swe' 'nno' 'eng' 'ang' when running the script.
 
 ## Data transformation
 
