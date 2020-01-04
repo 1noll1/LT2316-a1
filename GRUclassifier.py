@@ -15,44 +15,13 @@ class GRUclassifier(nn.Module):
         self.linear = nn.Linear(input_size * hidden_size, output_size) # 100 is the sequence length
         self.logsoftmax = nn.LogSoftmax(dim=1) # log softmax is needed for NLLL
 
-    # def forward(self, x):
-    #     output = self.embed(x)
-    #     h = self.init_hidden(len(x))
-    #     #h = self.init_hidden(len(x[0]))
-    #     #h = self.init_hidden(len(x))
-    #     output, hidden = self.gru(output, h)
-    #     output = output.contiguous().view(-1, self.hidden_size * len(x[0])) # -1 just infers the size
-    #     output = self.linear(output) # squish it! This is a fully connected layer!
-    #     return self.logsoftmax(output)
-
     def forward(self, x):
-        #batch_size = 1
-        # h = self.init_hidden(batch_size)
-        # output = self.embed(x)
-        # output = output.view(len(x), 1, -1)
-        # #print(output.shape)
-        # output, hidden = self.gru(output, h)
-        # output = output.contiguous().view(-1, self.hidden_size * len(x)) # -1 just infers the size
-        # output = self.linear(output) # squish it! This is a fully connected layer!
-        # return self.logsoftmax(output)
-
         output = self.embed(x)
         h = self.init_hidden(len(x[0]))
-        #h = self.init_hidden(len(x))
         output, hidden = self.gru(output, h)
         output = output.contiguous().view(-1, self.hidden_size * len(x[0])) # -1 just infers the size
         output = self.linear(output) # squish it! This is a fully connected layer!
         return self.logsoftmax(output)
-
-        # #h = self.init_hidden(batch_size)
-        # h = self.init_hidden(len(x[0]))
-        # output = self.embed(x)
-        # output = output.view(len(x), 1, -1)
-        # print(output.shape)
-        # output, hidden = self.gru(output, h)
-        # output = output.contiguous().view(-1, self.hidden_size * len(x)) # -1 just infers the size
-        # output = self.linear(output) # squish it! This is a fully connected layer!
-        # return self.logsoftmax(output)
 
     def set_dev(self, dev):
         self.dev = dev
