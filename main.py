@@ -18,7 +18,6 @@ def loadfiles(directory):
         print('loading file', f)
     return [open(f, 'r').read().split('\n') for f in sorted(glob(directory + '[xy]*.txt'))]    
 
-
 if __name__=='__main__':
     parser = argparse.ArgumentParser(description="Train a GRU model with minibathes.")
     parser.add_argument("--directory", required=True, type=str, help="The directory containing the test and training files")
@@ -34,7 +33,6 @@ if __name__=='__main__':
     dataset = PrefixLoader(['ukr', 'rus', 'bul', 'swe', 'eng', 'nnol', 'pl', 'bel', 'ang', 'rue'], x_train, y_train, dev)
     train_loader = DataLoader(dataset=dataset, batch_size=args.batch_size, shuffle=True, num_workers=0)
 
-    #optimizer = optim.Adam(model.parameters(), lr=0.01)
     if args.batch_size > 1:
         print('Training model with {} batches'.format(args.batch_size))
         model = GRUclassifier(dataset.vocab_size, len(dataset.x_train[0]), 50, dataset.num_classes, dev=dev)
