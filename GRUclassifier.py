@@ -11,7 +11,6 @@ class GRUclassifier(nn.Module):
         self.hidden_size = hidden_size
         self.embed = nn.Embedding(vocab_size+1, input_size)
         self.gru = nn.GRU(input_size, hidden_size, num_layers=1, batch_first=False) #input_size is 100? 
-        #self.linear = nn.Linear(100 * hidden_size, output_size) # 100 is the sequence length
         self.linear = nn.Linear(input_size * hidden_size, output_size) # 100 is the sequence length
         self.logsoftmax = nn.LogSoftmax(dim=1) # log softmax is needed for NLLL
 

@@ -59,9 +59,6 @@ class PrefixLoader():
         
         self.x_tensors = torch.LongTensor(self.x_train).to(dev)
         self.y_tensors = torch.LongTensor(self.y_train).to(dev)
-
-        print(self.x_tensors[0])
-        print(self.y_tensors[0])
         
     def __len__(self):
         return self.len
