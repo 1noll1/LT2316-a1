@@ -10,36 +10,39 @@ class PrefixLoader():
 
         vocab = [' ']
         for x, y in sentences:
-            for w in y.split():
-                vocab += w
+            for word in y.split():
+                vocab += word
         uniquevocab = list(set(vocab))
         self.vocab_size = len(uniquevocab)
 
         def get_vocab_index(uniquevocab):
-            vocabindex = {}
+            vocab_index = {}
             for i in range(len(uniquevocab)):
-                vocabindex.update({uniquevocab[i]: i})
-            return vocabindex
+                vocab_index.update({uniquevocab[i]: i})
+            return vocab_index
 
         self.char_index = get_vocab_index(uniquevocab)
 
-        def labelsents(lang_tuple):
-            return [(label, [[self.char_index[x]] for x in sent[:100]]) for label, sent in sentences]
+        def label_sents(lang_tuple):
+            return [(label, [self.char_index[word] for word in sent[:100]]) for label, sent in sentences]
 
-        self.sentences = labelsents(sentences)
+        self.sentences = label_sents(sentences)
 
         def generate_prefixed(labeled_sentences):
             # pad prefixes with zeros up to length 100
             lang_labels = [lang for lang, sentence in labeled_sentences]
-            prefix_vectors = []
+            X = []
             for label, sentence in labeled_sentences:
+                prefix_vectors = []
                 seq = np.zeros(100)
                 i = 0
                 for _int in sentence:
-                    seq[i] = _int[0]
+                    seq[i] = _int
                     i += 1
                     prefix_vectors.append(np.copy(seq))
-            return lang_labels, prefix_vectors
+                X.append(prefix_vectors)
+
+            return lang_labels, X
 
         lang_labels, self.x_train = generate_prefixed(self.sentences)
 
@@ -51,9 +54,7 @@ class PrefixLoader():
         self.num_classes = len(self.class_index)
 
         # because we have 100 x 100 sentences, the classes also need to be 100 x 100:
-        repeat_y = [np.repeat(self.class_index[lang], 100) for lang in lang_labels]
-        flatten = [item for sublist in repeat_y for item in sublist]
-        self.y_train = flatten
+        self.y_train = [[self.class_index[lang]] * 100 for lang in lang_labels]
 
         self.x_tensors = torch.LongTensor(self.x_train).to(dev)
         self.y_tensors = torch.LongTensor(self.y_train).to(dev)

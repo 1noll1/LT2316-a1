@@ -10,21 +10,24 @@ class GRUclassifier(nn.Module):
         self.dev = dev
         self.num_layers = 1
         self.hidden_size = hidden_size
-        self.embed = nn.Embedding(vocab_size + 1, input_size)
-        self.gru = nn.GRU(input_size, hidden_size, num_layers=1, batch_first=False)  # input_size is 100?
-        self.linear = nn.Linear(input_size * hidden_size, output_size)  # 100 is the sequence length
-        self.logsoftmax = nn.LogSoftmax(dim=1)
+        self.embed = nn.Embedding(vocab_size, input_size)
+        self.gru = nn.GRU(input_size, hidden_size, num_layers=1, batch_first=True)
+        self.linear = nn.Linear(hidden_size, output_size)
+        self.logsoftmax = nn.LogSoftmax(dim=2)
 
     def forward(self, x):
+        batch_size = x.shape[0]
         output = self.embed(x)
-        h = self.init_hidden(len(x[0]))
+        output = output.contiguous().view(batch_size, 10000, -1)
+        h = self.init_hidden(len(x))
         output, hidden = self.gru(output, h)
-        output = output.contiguous().view(-1, self.hidden_size * len(x[0]))  # -1 just infers the size
         output = self.linear(output)  # squish it! This is a fully connected layer!
         return self.logsoftmax(output)
 
     def set_dev(self, dev):
         self.dev = dev
 
-    def init_hidden(self, x_len):
-        return torch.zeros(self.num_layers, x_len, self.hidden_size).to(self.dev)
+    def init_hidden(self, batch_len):
+        #return torch.zeros(8, self.num_layers, self.hidden_size).to(self.dev)
+        #return torch.zeros(self.num_layers, 8, self.hidden_size).to(self.dev)
+        return torch.zeros(self.num_layers, batch_len, self.hidden_size).to(self.dev)

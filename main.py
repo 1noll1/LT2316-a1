@@ -23,7 +23,7 @@ if __name__ == '__main__':
                         help="The directory containing the test and training files")
     parser.add_argument("-batch_size", type=int, default=200, help="The desired mini batch size")
     parser.add_argument("-E", "--num_epochs", type=int, default=20, help="The desired amount of epochs for training")
-    parser.add_argument('-l', '--langs', nargs='+', help='list of languages to train on')
+    parser.add_argument('-l', '--langs', nargs='+', help='list of languages to train on', default=['ukr', 'rus', 'bul', 'swe', 'eng', 'nno', 'pol', 'bel', 'ang', 'rue'])
     parser.add_argument("--eval", type=str, default=False, help="Evaluate the trained model")
 
     args = parser.parse_args()
@@ -40,11 +40,9 @@ if __name__ == '__main__':
     if not args.langs:
         # default languages
         print('using default languages')
-        languages = ['ukr', 'rus', 'bul', 'swe', 'eng', 'nno', 'pol', 'bel', 'ang', 'rue']
 
     dataset = PrefixLoader(args.langs, x_train, y_train, dev)
-    train_loader = DataLoader(dataset=dataset, batch_size=args.batch_size, shuffle=True, num_workers=0)
-    print('Languages used:', args.langs)
+    train_loader = DataLoader(dataset=dataset, batch_size=args.batch_size, shuffle=False, num_workers=0)
 
     print('Training model with batch size {}'.format(args.batch_size))
     model = GRUclassifier(dataset.vocab_size, len(dataset.x_train[0]), 50, dataset.num_classes, dev=dev)
