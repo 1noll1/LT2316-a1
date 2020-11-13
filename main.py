@@ -21,7 +21,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="Train a GRU model.")
     parser.add_argument("directory", type=str,
                         help="The directory containing the test and training files")
-    parser.add_argument("-batch_size", type=int, default=200, help="The desired mini batch size")
+    parser.add_argument("-batch_size", type=int, default=32, help="The desired mini batch size")
     parser.add_argument("-E", "--num_epochs", type=int, default=20, help="The desired amount of epochs for training")
     parser.add_argument('-l', '--langs', nargs='+', help='list of languages to train on', default=['ukr', 'rus', 'bul', 'swe', 'eng', 'nno', 'pol', 'bel', 'ang', 'rue'])
     parser.add_argument("--eval", type=str, default=False, help="Evaluate the trained model")
@@ -32,7 +32,7 @@ if __name__ == '__main__':
 
     _, x_train, _, y_train = loadfiles(args.directory)
     labels = pd.read_csv('wili-2018/labels.csv', sep=';', index_col=0)
-    print('Using languages:')
+    print('Using languages:' + '\n')
     for index, row in labels.iterrows():
         if index in args.langs:
             print(row['English'])

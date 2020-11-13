@@ -14,16 +14,15 @@ def train_model(model, num_epochs, dev, train_loader, loss_mode=1):
         print('starting epoch...')
         for i, data in enumerate(train_loader, 0):
             inputs, labels = data
-            #labels = torch.LongTensor([[label] * 100 for label in labels])
             y_pred = model(inputs)
-
+            #print(y_pred.shape)
             batch_size, _, output_size = y_pred.shape
             y_pred = y_pred.view(batch_size, 100, 100, -1)
 
             running_loss = 0
 
             for ix, prefix in enumerate(y_pred[:, 1]):
-                print('prefix', ix)
+                #print('prefix', ix)
                 # print(prefix)
                 # print('prefix shape:', prefix.shape)
                 if loss_mode == 1:
@@ -36,6 +35,7 @@ def train_model(model, num_epochs, dev, train_loader, loss_mode=1):
                     loss = criterion(prefix, labels[ix]) * len(prefix.nonzero())
                 losses.append(loss.item())
                 running_loss += loss
+
             optimizer.zero_grad()
             running_loss.backward()
             optimizer.step()

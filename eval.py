@@ -4,7 +4,7 @@ from main import loadfiles
 from prefixloader import PrefixLoader
 from torch.utils.data import DataLoader
 import pandas as pd
-
+from tqdm import tqdm
 
 def model_eval(test_loader, model, eval_mode=1):
     model = model.eval()
@@ -15,32 +15,38 @@ def model_eval(test_loader, model, eval_mode=1):
     total = 0  # of the instances that are not complete failures
 
     with torch.no_grad():
-        for x, y in test_loader:
+        for sents, labels in tqdm(test_loader):
+            labels = labels.to('cpu')
             a += 1
-            x = x.to('cpu')
-            outputs = model(x)
-            _, predicted = torch.max(outputs.data, 1)
+            outputs = model(sents)
+            _, predicted = torch.max(outputs.data, 2)
+            predicted = predicted.view(100, 100).to('cpu')
+
             if eval_mode == 1:
-                for i, value in enumerate(y):
-                    value = value.to('cpu')
-                    if value == predicted[i]:
-                        predictions['Instance {}'.format(a)] += 1
-                        print('Correct guess at prefix length {}'.format(i))
-                    else:
-                        continue
-            elif eval_mode == 2:
-                for i, value in enumerate(predicted):
-                    if value != y[i]:
-                        if i == len(predicted) - 1:
-                            print('Complete failure!')
-                            failures += 1
+
+                for i, label in enumerate(labels):
+                    # the true label is the same for every prefix
+                    label = label[0]
+                    for ix, predicted_label in enumerate(predicted[i]):
+                        if label == predicted_label:
+                            predictions['Instance {}'.format(a)] += 1
+                            print('Correct guess at prefix length {}'.format(ix))
+                            break
                         else:
                             pass
-                    elif value == y[i]:
-                        print('Number of characters until hit score: {}'.format(i + 1))
-                        scored += (i + 1)
-                        total += 1
-                        break
+
+            elif eval_mode == 2:
+                for i, predicted_labels in enumerate(predicted):
+                    for ix, label in enumerate(predicted_labels):
+                        if label != labels[0][0]:
+                            if ix == 99:
+                                print('Complete failure!')
+                                failures += 1
+                        elif label == labels[0][0]:
+                            print('Number of characters until hit score: {}'.format(ix + 1))
+                            scored += (ix + 1)
+                            total += 1
+                            break
 
     if eval_mode == 1:
         print('Number of accurate guesses per sentence')
@@ -63,7 +69,7 @@ def model_eval(test_loader, model, eval_mode=1):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="Evaluate GRU model.")
 
-    parser.add_argument("--directory", type=str, required=True,
+    parser.add_argument("directory", type=str, default='wili-2018/',
                         help="The directory containing the test and training files")
     parser.add_argument("--modelfile", type=str, required=True, help="Name of the file containing the trained model")
     parser.add_argument('-l', '--langs', nargs='+', help='list of languages to train evaluate on')
@@ -80,8 +86,9 @@ if __name__ == '__main__':
 
     trained_model = torch.load(args.modelfile)
     x_test, _, y_test, _ = loadfiles(args.directory)
-    dev = torch.device("{}".format("cuda" if torch.cuda.is_available() else "cpu"))
+    #dev = torch.device("{}".format("cuda" if torch.cuda.is_available() else "cpu"))
+    dev = torch.device("cuda:3")
 
     test_dataset = PrefixLoader(args.langs, x_test, y_test, dev)
-    test_loader = DataLoader(dataset=test_dataset, batch_size=100, shuffle=False)
+    test_loader = DataLoader(dataset=test_dataset, batch_size=1, shuffle=False)
     model_eval(test_loader, trained_model, args.eval_mode)

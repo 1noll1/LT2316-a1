@@ -28,6 +28,4 @@ class GRUclassifier(nn.Module):
         self.dev = dev
 
     def init_hidden(self, batch_len):
-        #return torch.zeros(8, self.num_layers, self.hidden_size).to(self.dev)
-        #return torch.zeros(self.num_layers, 8, self.hidden_size).to(self.dev)
         return torch.zeros(self.num_layers, batch_len, self.hidden_size).to(self.dev)
