@@ -5,6 +5,8 @@ from prefixloader import PrefixLoader
 from torch.utils.data import DataLoader
 import pandas as pd
 from tqdm import tqdm
+import pickle
+
 
 def model_eval(test_loader, model, eval_mode=1):
     model = model.eval()
@@ -88,8 +90,9 @@ if __name__ == '__main__':
     trained_model = torch.load(args.modelfile)
     x_test, _, y_test, _ = loadfiles(args.directory)
     dev = torch.device(f'cuda:{args.cuda}')
-    #print('Using', dev)
+    # print('Using', dev)
 
-    test_dataset = PrefixLoader(args.langs, x_test, y_test, dev)
+    train_dataset = pickle.load("train_dataset.pkl")
+    test_dataset = PrefixLoader(args.langs, x_test, y_test, dev, train_dataset)
     test_loader = DataLoader(dataset=test_dataset, batch_size=1, shuffle=False)
     model_eval(test_loader, trained_model, args.eval_mode)
