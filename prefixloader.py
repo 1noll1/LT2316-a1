@@ -3,28 +3,38 @@ import torch
 
 
 class PrefixLoader():
-    def __init__(self, langs, x_file, y_file, dev):
+    def __init__(self, langs, x_file, y_file, dev, eval=False):
         self.langs = langs
-        sentences = [(label, sent) for label, sent in zip(y_file, x_file) if label in self.langs]
+        self.sentences = [(label, sent) for label, sent in zip(y_file, x_file) if label in self.langs]
         self.len = len(sentences)
+        self.dev = dev
 
-        vocab = [' ']
-        for x, y in sentences:
-            for word in y.split():
-                vocab += word
-        uniquevocab = list(set(vocab))
-        self.vocab_size = len(uniquevocab)
+        def get_vocab():
+            vocab = [' ', 'UNK']
+            for label, sent in self.sentences:
+                for word in sent.split():
+                    vocab += word
+            uniquevocab = list(set(vocab))
+            vocab_size = len(uniquevocab)
+            print('vocab size:', vocab_size) 
+            return vocab, vocab_size, uniquevocab
 
-        def get_vocab_index(uniquevocab):
+        self.vocab, self.vocab_size, self.uniquevocab = get_vocab(self.sentences)
+
+        def get_vocab_index():
             vocab_index = {}
-            for i in range(len(uniquevocab)):
-                vocab_index.update({uniquevocab[i]: i})
+            for i in range(len(self.uniquevocab)):
+                vocab_index.update({self.uniquevocab[i]: i})
             return vocab_index
 
-        self.char_index = get_vocab_index(uniquevocab)
+        self.char_index = get_vocab_index()
 
-        def label_sents(lang_tuple):
-            return [(label, [self.char_index[word] for word in sent[:100]]) for label, sent in sentences]
+        def label_sents():
+            index_sents = []
+            for label, sent in sentences:
+                index_sents.extend([(label, self.char_index[word] if word in vocab else self.char_index['UNK'] for word in sent[:100])])
+            return index_sents
+            #return [(label, [self.char_index[word] for word in sent[:100]]) for label, sent in sentences]
 
         self.sentences = label_sents(sentences)
 
@@ -54,13 +64,17 @@ class PrefixLoader():
         self.num_classes = len(self.class_index)
 
         # because we have 100 x 100 sentences, the classes also need to be 100 x 100:
+        #self.y_train = [self.class_index[lang] for lang in lang_labels]
         self.y_train = [[self.class_index[lang]] * 100 for lang in lang_labels]
 
-        self.x_tensors = torch.LongTensor(self.x_train).to(dev)
-        self.y_tensors = torch.LongTensor(self.y_train).to(dev)
+        self.x_tensors = torch.LongTensor(self.x_train)
+        self.y_tensors = torch.LongTensor(self.y_train)
+
+        print('X tensors shape:', self.x_tensors.shape)
+        print('y tensors shape:', self.y_tensors.shape)
 
     def __len__(self):
         return self.len
 
     def __getitem__(self, i):
-        return self.x_tensors[i], self.y_tensors[i]
+        return self.x_tensors[i].to(self.dev), self.y_tensors[i].to(self.dev)
