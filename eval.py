@@ -13,14 +13,14 @@ def model_eval(test_loader, model, eval_mode=1):
     failures = 0
     scored = 0
     total = 0  # of the instances that are not complete failures
+    print('model', model)
 
     with torch.no_grad():
         for sents, labels in tqdm(test_loader):
-            labels = labels.to('cpu')
             a += 1
             outputs = model(sents)
             _, predicted = torch.max(outputs.data, 2)
-            predicted = predicted.view(100, 100).to('cpu')
+            predicted = predicted.view(100, 100)
 
             if eval_mode == 1:
 
@@ -75,6 +75,7 @@ if __name__ == '__main__':
     parser.add_argument('-l', '--langs', nargs='+', help='list of languages to train evaluate on')
     parser.add_argument('--eval_mode', type=int, required=True,
                         help="Which of the 2 eval modes to implement – see README")
+    parser.add_argument('--cuda', type=str, help="Specify GPU")
 
     args = parser.parse_args()
 
@@ -86,8 +87,8 @@ if __name__ == '__main__':
 
     trained_model = torch.load(args.modelfile)
     x_test, _, y_test, _ = loadfiles(args.directory)
-    #dev = torch.device("{}".format("cuda" if torch.cuda.is_available() else "cpu"))
-    dev = torch.device("cuda:3")
+    dev = torch.device(f'cuda:{args.cuda}')
+    #print('Using', dev)
 
     test_dataset = PrefixLoader(args.langs, x_test, y_test, dev)
     test_loader = DataLoader(dataset=test_dataset, batch_size=1, shuffle=False)
