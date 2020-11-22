@@ -21,7 +21,7 @@ class PrefixLoader():
 
         if not train_dataset:
             self.vocab, self.vocab_size, self.unique_vocab =\
-                get_vocab(self.sentences)
+                get_vocab()
         else:
             self.vocab, self.vocab_size, self.unique_vocab =\
                 train_dataset.vocab, train_dataset.vocab_size, set(train_dataset.vocab)
@@ -37,17 +37,19 @@ class PrefixLoader():
         def label_sents():
             index_sents = []
             for label, sent in self.sentences:
-                index_sents.extend([(label, self.char_index[word] if word in self.vocab else self.char_index['UNK'] for word in sent[:100])])
+                _sent = [self.char_index[w] if w in self.vocab else self.char_index['UNK'] for w in sent[:100]]
+                index_sents.extend([(label, _sent)])
             return index_sents
             #return [(label, [self.char_index[word] for word in sent[:100]]) for label, sent in sentences]
 
-        self.sentences = label_sents(self.sentences)
+        self.labeled_sentences = label_sents()
+        #print(self.labeled_sentences)
 
-        def generate_prefixed(labeled_sentences):
+        def generate_prefixed():
             # pad prefixes with zeros up to length 100
-            lang_labels = [lang for lang, sentence in labeled_sentences]
+            lang_labels = [lang for lang, sentence in self.labeled_sentences]
             X = []
-            for label, sentence in labeled_sentences:
+            for label, sentence in self.labeled_sentences:
                 prefix_vectors = []
                 seq = np.zeros(100)
                 i = 0
@@ -59,13 +61,13 @@ class PrefixLoader():
 
             return lang_labels, X
 
-        lang_labels, self.x_train = generate_prefixed(self.sentences)
+        lang_labels, self.x_train = generate_prefixed()
 
         def get_class_index():
             class_int = [i for i in range(len(self.langs))]
             return {classname: i for classname, i in zip(self.langs, class_int)}
 
-        self.class_index = get_class_index(self.langs)
+        self.class_index = get_class_index()
         self.num_classes = len(self.class_index)
 
         # because we have 100 x 100 sentences, the classes also need to be 100 x 100:
