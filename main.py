@@ -42,7 +42,7 @@ if __name__ == '__main__':
         # default languages
         print('Using default languages')
 
-    dataset = PrefixLoader(args.langs, x_train, y_train, dev)
+    dataset = PrefixLoader(args.langs, x_train, y_train, dev,)
     pickle.dump(dataset, open("train_dataset.pkl", "wb"))
     print('Saving train dataset to train_dataset.pkl')
     train_loader = DataLoader(dataset=dataset, batch_size=args.batch_size, shuffle=False, num_workers=0)
