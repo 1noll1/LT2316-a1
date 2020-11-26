@@ -10,13 +10,14 @@ class PrefixLoader():
         self.dev = dev
 
         def get_vocab():
+            print('Creating vocab')
             vocab = [' ', 'UNK']
             for label, sent in self.sentences:
                 for word in sent.split():
                     vocab += word
             uniquevocab = list(set(vocab))
+            uniquevocab.sort()
             vocab_size = len(uniquevocab)
-            print('vocab size:', vocab_size) 
             return vocab, vocab_size, uniquevocab
 
         if not train_dataset:
@@ -24,7 +25,7 @@ class PrefixLoader():
                 get_vocab()
         else:
             self.vocab, self.vocab_size, self.unique_vocab =\
-                train_dataset.vocab, train_dataset.vocab_size, set(train_dataset.vocab)
+                train_dataset.vocab, train_dataset.vocab_size, sorted(list(set(train_dataset.vocab)))
 
         def get_vocab_index():
             vocab_index = {}
@@ -35,17 +36,18 @@ class PrefixLoader():
         self.char_index = get_vocab_index()
 
         def label_sents():
+            print('Converting characters to ints')
             index_sents = []
             for label, sent in self.sentences:
-                _sent = [self.char_index[w] if w in self.vocab else self.char_index['UNK'] for w in sent[:100]]
-                index_sents.extend([(label, _sent)])
+                sent = sent[:100]
+                sent = [self.char_index[w] if w in self.vocab else self.char_index['UNK'] for w in sent]
+                index_sents.extend([(label, sent)])
             return index_sents
-            #return [(label, [self.char_index[word] for word in sent[:100]]) for label, sent in sentences]
 
         self.labeled_sentences = label_sents()
-        #print(self.labeled_sentences)
 
         def generate_prefixed():
+            print('Padding sentences')
             # pad prefixes with zeros up to length 100
             lang_labels = [lang for lang, sentence in self.labeled_sentences]
             X = []
@@ -76,6 +78,9 @@ class PrefixLoader():
 
         self.x_tensors = torch.LongTensor(self.x_train)
         self.y_tensors = torch.LongTensor(self.y_train)
+
+        print(self.x_tensors.shape)
+        #raise ValueError
 
     def __len__(self):
         return self.len

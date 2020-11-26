@@ -3,7 +3,7 @@ from torch import optim
 import torch
 
 
-def train_model(model, num_epochs, dev, train_loader, loss_mode=1):
+def train_model(model, num_epochs, dev, train_loader, loss_mode):
     optimizer = optim.Adam(model.parameters(), lr=0.01)
     criterion = nn.NLLLoss()
     model = model.to(dev)
@@ -15,17 +15,14 @@ def train_model(model, num_epochs, dev, train_loader, loss_mode=1):
         for i, data in enumerate(train_loader, 0):
             inputs, labels = data
             y_pred = model(inputs)
-            #print(y_pred.shape)
             batch_size, _, output_size = y_pred.shape
             y_pred = y_pred.view(batch_size, 100, 100, -1)
 
             running_loss = 0
 
             for ix, prefix in enumerate(y_pred[:, 1]):
-                #print('prefix', ix)
-                # print(prefix)
-                # print('prefix shape:', prefix.shape)
                 if loss_mode == 1:
+                    # default loss mode
                     loss = criterion(prefix, labels[ix])
                 if loss_mode == 2:
                     # penalize by the prefix length
