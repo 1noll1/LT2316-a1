@@ -32,23 +32,29 @@ Once each sentence prefix has been converted to a padded tensor, each sentence i
 
 | Command    | Default | Required? | Description | Example |
 |-------------|---------------|---------------|---------------|---------------|
-| --directory   | - | Yes | The directory containing the test and training text files | --directory | '/usr/local/courses/lt2316-h19/a1/' |
-| --langs   | - | Yes | The list of language codes to train and evaluate on | --langs 'ukr' 'rus' 'bul' 'bel' 'pl' 'rue' 'swe' 'nnol' 'eng' 'ang' |
-| --batch_size   | 200             | No | If you wish to train *without* minibatching set batch_size to 1. | |
-| --num_epochs   | 20             | No | - | |
+| --directory   | 'wili-2018/' | Yes | The directory containing the test and training text files | --directory | main.py 'wili-2018/' |
+| --langs   | 'ukr' 'rus' 'bul' 'bel' 'pl' 'rue' 'swe' 'nnol' 'eng' 'ang' | Yes | The list of language codes to train and evaluate on | --langs 'swe' 'nno' 'ang' |
+| -batch_size   | 16 | No | If you wish to train *without* minibatching set batch_size to 1 | -batch_size 8 |
+| --loss_mode   | 1 | No | Which of the 3 loss modes to use– see below | -e 10|
+| -E   | 20             | No | Number of epochs | -e 10|
 
 ### eval.py
 
 | Command    | Default | Required? | Description | Example |
 |-------------|---------------|---------------|---------------|---------------|
-| --directory   | - | Yes | The directory containing the test and training text files | --directory '/usr/local/courses/lt2316-h19/a1/' |
-| --modelfile | - | Yes | Name of the file containing the trained model | --modefile trained_model_e20b200 |
-| --langs   | - | Yes | The list of language codes to train and evaluate on | Same as in main.py. Don't forget to use the same languages for evaluation! |
+| --directory   | 'wili-2018/' | Yes | The directory containing the test and training text files | eval.py 'wili-2018/' |
+| --modelfile | - | Yes | Name of the file containing the trained model | --modefile trained_models/trained_model_e20b200 |
+| --langs   | 'ukr' 'rus' 'bul' 'bel' 'pl' 'rue' 'swe' 'nnol' 'eng' 'ang' | Yes | The list of language codes to train and evaluate on | Same as in main.py. Don't forget to use the same languages for evaluation! |
 | --eval_mode   | - | Yes | One of two eval_mode options – see README | --eval_mode 2 |
+| --cuda   | - | Yes | If you need to specify which GPU you used for training | --cuda 0 |
+
+**Example use:**  
+```
+$ python3 main.py 'wili-2018/' --langs 'est' 'fin' --loss_mode 1 -E 10 -batch_size 16  
+$ python3 eval.py 'wili-2018/' --modelfile 'trained_models/trained_model_e10b16l1nordic' --langs 'est' 'fin' --eval_mode 1 --cuda 1
+```
 
 ## Hyperparameters
-
-The batched training data produced fairly low loss values even at a learning rate of 0.01. The single instance training, however, stopped learning at this lr (on a loss of ~28) and was therefore trained at lr=00.01.
 
 There are three different loss modes: mode 1 is "vanilla" NLLL, mode 2 is the former with penalization by 1/100 of the prefix length and mode 3 means penalization by the full prefix length. They are specified like so in the code:
 
