@@ -23,7 +23,7 @@ if __name__ == '__main__':
                         help="The directory containing the test and training files")
     parser.add_argument("-batch_size", type=int, default=16, help="The desired mini batch size")
     parser.add_argument("-E", "--num_epochs", type=int, default=10, help="The desired amount of epochs for training")
-    parser.add_argument('-l', '--langs', nargs='+', help='list of languages to train on', default=['ukr', 'rus', 'bul', 'swe', 'eng', 'nno', 'pol', 'bel', 'ang', 'rue'])
+    parser.add_argument('-l', '--langs', nargs='+', help='list of languages to train on', default=['ukr', 'rus', 'bul', 'bel', 'pol', 'rue', 'swe', 'nno', 'eng', 'ang'])
     parser.add_argument("--loss_mode", type=int, default=1, help="Which of the 3 loss modes to use– see README")
 
     args = parser.parse_args()
@@ -33,14 +33,17 @@ if __name__ == '__main__':
 
     _, x_train, _, y_train = loadfiles(args.directory)
     labels = pd.read_csv('wili-2018/labels.csv', sep=';', index_col=0)
-    print('Using languages:' + '\n')
+
+    if set(args.langs) == set(parser.get_default('langs')):
+        # default languages
+        print('Using default languages:')
+    else:
+        print('Using custom languages:')
+
+    #print('Using languages:' + '\n')
     for index, row in labels.iterrows():
         if index in args.langs:
             print(row['English'])
-
-    if not args.langs:
-        # default languages
-        print('Using default languages')
 
     dataset = PrefixLoader(args.langs, x_train, y_train, dev, None)
     pickle.dump(dataset, open("train_dataset.pkl", "wb"))
@@ -53,4 +56,4 @@ if __name__ == '__main__':
     trained_model = train_model(model, args.num_epochs, dev, train_loader=train_loader, loss_mode=args.loss_mode)
     model_name = 'trained_model_' + 'e' + str(args.num_epochs) + 'b' + str(args.batch_size) + 'l' + str(args.loss_mode)
     print(f'Saving model as {model_name}')
-    torch.save(trained_model, model_name)
+    torch.save(trained_model, 'trained_models/' + model_name)
