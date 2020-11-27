@@ -1,10 +1,8 @@
 import argparse
 import torch
-from main import loadfiles
+from main import load_files, check_langs
 from prefixloader import PrefixLoader
 from torch.utils.data import DataLoader
-import pandas as pd
-#from tqdm import tqdm
 import pickle
 
 
@@ -83,21 +81,18 @@ if __name__ == '__main__':
     parser.add_argument("directory", type=str, default='wili-2018/',
                         help="The directory containing the test and training files")
     parser.add_argument("--modelfile", type=str, required=True, help="Name of the PATH to the trained model")
-    parser.add_argument('-l', '--langs', nargs='+', help='List of languages to train evaluate on', default=['ukr', 'rus', 'bul', 'bel', 'pol', 'rue', 'swe', 'nno', 'eng', 'ang'])
+    parser.add_argument('-l', '--langs', nargs='+', help='List of languages to train evaluate on',
+                        default=['ukr', 'rus', 'bul', 'bel', 'pol', 'rue', 'swe', 'nno', 'eng', 'ang'])
     parser.add_argument('--eval_mode', type=int, required=True,
                         help="Which of the 2 eval modes to implement – see README")
     parser.add_argument('--cuda', type=str, help="Specify GPU")
 
     args = parser.parse_args()
 
-    labels = pd.read_csv('wili-2018/labels.csv', sep=';', index_col=0)
-    print('Using languages:')
-    for index, row in labels.iterrows():
-        if index in args.langs:
-            print(row['English'])
+    check_langs(parser, args.langs)
 
     trained_model = torch.load(args.modelfile)
-    x_test, _, y_test, _ = loadfiles(args.directory)
+    x_test, _, y_test, _ = load_files(args.directory)
     dev = trained_model.dev
 
     train_dataset = pickle.load(open("train_dataset.pkl", 'rb'))
