@@ -33,7 +33,7 @@ Once each sentence prefix has been converted to a padded tensor, each sentence i
 | Command    | Default | Required? | Description | Example |
 |-------------|---------------|---------------|---------------|---------------|
 | --directory   | 'wili-2018/' | Yes | The directory containing the test and training text files | --directory | main.py 'wili-2018/' |
-| --langs   | 'ukr' 'rus' 'bul' 'bel' 'pl' 'rue' 'swe' 'nnol' 'eng' 'ang' | Yes | The list of language codes to train and evaluate on | --langs 'swe' 'nno' 'ang' |
+| --langs   | 'ukr' 'rus' 'bul' 'bel' 'pol' 'rue' 'swe' 'nno' 'eng' 'ang' | Yes | The list of language codes to train and evaluate on | --langs 'swe' 'nno' 'ang' |
 | -batch_size   | 16 | No | If you wish to train *without* minibatching set batch_size to 1 | -batch_size 8 |
 | --loss_mode   | 1 | No | Which of the 3 loss modes to use– see below | -e 10|
 | -E   | 20             | No | Number of epochs | -e 10|
@@ -44,7 +44,7 @@ Once each sentence prefix has been converted to a padded tensor, each sentence i
 |-------------|---------------|---------------|---------------|---------------|
 | --directory   | 'wili-2018/' | Yes | The directory containing the test and training text files | eval.py 'wili-2018/' |
 | --modelfile | - | Yes | Name of the file containing the trained model | --modefile trained_models/trained_model_e20b200 |
-| --langs   | 'ukr' 'rus' 'bul' 'bel' 'pl' 'rue' 'swe' 'nnol' 'eng' 'ang' | Yes | The list of language codes to train and evaluate on | Same as in main.py. Don't forget to use the same languages for evaluation! |
+| --langs   | 'ukr' 'rus' 'bul' 'bel' 'pol' 'rue' 'swe' 'nno' 'eng' 'ang' | Yes | The list of language codes to train and evaluate on | Same as in main.py. Don't forget to use the same languages for evaluation! |
 | --eval_mode   | - | Yes | One of two eval_mode options – see README | --eval_mode 2 |
 | --cuda   | - | Yes | If you need to specify which GPU you used for training | --cuda 0 |
 
