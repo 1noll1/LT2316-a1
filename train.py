@@ -1,6 +1,5 @@
 from torch import nn
 from torch import optim
-import torch
 
 
 def train_model(model, num_epochs, dev, train_loader, loss_mode):

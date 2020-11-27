@@ -26,8 +26,6 @@ The PrefixLoader class handles the loading, padding etc. After converting the vo
 
 Once each sentence prefix has been converted to a padded tensor, each sentence instance is of size 100x100. To be able to feed these tensors along with their labels, the original list of sentence labels is transformed to repeat 100 times (i.e. 1<sub>0</sub>, 1<sub>1</sub>, ... , 1<sub>100</sub>). These are then loaded into the model with the help of torch.DataLoader.
 
-* (This is simply because I learned about torch's pad_sequence after I wrote the function and it didn't hamper performance in any significant way. This also means training was done without padding.)
-
 ## Command line arguments
 
 ### main.py
@@ -36,7 +34,7 @@ Once each sentence prefix has been converted to a padded tensor, each sentence i
 |-------------|---------------|---------------|---------------|---------------|
 | --directory   | - | Yes | The directory containing the test and training text files | --directory | '/usr/local/courses/lt2316-h19/a1/' |
 | --langs   | - | Yes | The list of language codes to train and evaluate on | --langs 'ukr' 'rus' 'bul' 'bel' 'pl' 'rue' 'swe' 'nnol' 'eng' 'ang' |
-| --batch_size   | 200             | No | If you wish to train *without* minibatches, set batch_size to 1. | |
+| --batch_size   | 200             | No | If you wish to train *without* minibatching set batch_size to 1. | |
 | --num_epochs   | 20             | No | - | |
 
 ### eval.py
@@ -67,7 +65,6 @@ if loss_mode == 3:
 
 
 ## Evaluation
-The evaluation script uses a non shuffled version of the DataLoader with a batch size of 100 to get the 100 prefixes per sentence.
 
 There are two possible evaluation modes; 1 and 2.
 
@@ -85,35 +82,191 @@ The average number of characters until hit score is calculated over the amount o
 *For some reason this script works fine in a Jupyter notebook but gives different outcomes when run from the command line. This type of behaviour suggests that the model is not actually in eval mode while evaluating. *
 
 ## Outcome
-Minibatching sped up the training process by hours (the training times were not timed, but feel free to try and see ;)). It is possible that this process could be sped up with the use of packing.
 
-### model: trained = trained_batches 20 epochs, loss_mode 1
+### model: 10 epochs, batch size 16, loss mode 1
 
 ```
-Overall accuracy: 35.0 %
+Overall accuracy: 99.5 %  
+
+Total amounts of complete failures: 25  
+
+Average number of characters until hit score: 6  
+
+```
+### model: 10 epochs, batch size 16, loss mode 2
+
+```
+Overall accuracy: 99.42 %
 
 Total amounts of complete failures: 29
 
-Average number of characters until hit score: 8
+Average number of characters until hit score: 6  
 
 ```
 
-### model: trained_batches 20 epochs, loss_mode 2
+### model: 10 epochs, batch size 16, loss mode 3
 
 ```
-Overall accuracy: 20.0 %
+Overall accuracy: 99.24 %
 
-Total amounts of complete failures: 32
+Total amounts of complete failures: 38
 
-Average number of characters until hit score: 4
+Average number of characters until hit score: 7
 
 ```
-### model: trained = trained_batches 20 epochs, loss_mode 3
-```
-Overall accuracy: 40.0 %
 
-Total amounts of complete failures: 24
-
-Average number of characters until hit score: 5
+### model: 10 epochs, batch size 32, loss mode 1
 ```
+Overall accuracy: 99.62 %
+
+Total amounts of complete failures: 19
+
+Average number of characters until hit score: 6
+```
+
+### model: 1 epoch, batch size 16, loss mode 1
+```
+Overall accuracy: 97.54 % %
+
+Total amounts of complete failures: 123
+
+Average number of characters until hit score: 11
+```
+
+# Successful examples
+These samples are all from the model trained for 10 epochs (loss mode 1).
+
+Sometimes the "reasoning" of the model seems obvious, and sometimes less so.
+
+_"Ēadweard Æþelinges Īegland næs Canadan underrīce æt þæs rīces forma geþoftunge ac weard underrīce on"_  
+true label: ang
+correct guess at prefix length 0
+
+**Comment:** The character "Ē" is not part of any of the languges alphabets and is thus highly unlikely to appear in any other language than Old English.
+
+_"Gura Pahār är en kulle i Indien. Den ligger i distriktet Tīkamgarh och delstaten Madhya Pradesh, i d"_   
+true label: swe  
+wrong guess: ang  
+wrong guess: nno  
+correct guess at prefix length 2  
+
+**Comment:** The character cluster "Gu" as initial characters is common in both Swedish and Norwegian (e.g. the name Gustav), and perhaps even Old English, so although the initial words are in fact not from any of these languages, the model "got lucky".
+
+_"Сюжет е росповѣдь, опис подѣй, епизодох, образох, описох, сцен, котры читательови (слухательови, поз"_  
+true label: rue  
+wrong guess: rus  
+wrong guess: bul  
+wrong guess: bul  
+correct guess at prefix length 3  
+
+**Comment:** The term Сюжет ("plot") occurs in both Russian and Bulgarian, so it makes sense for the model to make these guesses; how it ended up catching the right label is a mystery. The character ѣ should be the strongest clue, as it is obsolete in both Russian and Bulgarian.
+
+# An example of a complete failure
+Here the 'true label' wrong; the language in this fragment is actually German.  
+The model does a good job of guessing (it names the Germanic languages).  
+
+_"Walter Benjamin: Briefe an Siegfried Kracauer. Mit 4 Briefen von Siegfried Kracauer an Walter Benjam"_  
+*true label: bul  
+wrong guess: pol  
+wrong guess: ang  
+wrong guess: swe  
+wrong guess: swe  
+wrong guess: eng  
+wrong guess: ang  
+wrong guess: ang  
+wrong guess: ang  
+wrong guess: nno  
+wrong guess: swe  
+wrong guess: pol  
+wrong guess: nno  
+wrong guess: swe  
+wrong guess: nno  
+wrong guess: swe  
+wrong guess: pol  
+wrong guess: pol  
+wrong guess: pol  
+wrong guess: ang  
+wrong guess: ang  
+wrong guess: ang  
+wrong guess: ang  
+wrong guess: ang  
+wrong guess: ang  
+wrong guess: ang  
+wrong guess: swe  
+wrong guess: swe  
+wrong guess: ang  
+wrong guess: ang  
+wrong guess: ang  
+wrong guess: ang  
+wrong guess: ang  
+wrong guess: ang  
+wrong guess: ang  
+wrong guess: ang  
+wrong guess: swe  
+wrong guess: swe  
+wrong guess: swe  
+wrong guess: swe  
+wrong guess: swe  
+wrong guess: swe  
+wrong guess: swe  
+wrong guess: nno  
+wrong guess: nno  
+wrong guess: ang  
+wrong guess: nno  
+wrong guess: nno  
+wrong guess: ang  
+wrong guess: ang  
+wrong guess: swe  
+wrong guess: swe  
+wrong guess: pol  
+wrong guess: pol  
+wrong guess: ang  
+wrong guess: ang  
+wrong guess: ang  
+wrong guess: ang  
+wrong guess: ang  
+wrong guess: ang  
+wrong guess: ang  
+wrong guess: ang  
+wrong guess: swe  
+wrong guess: nno  
+wrong guess: swe  
+wrong guess: swe  
+wrong guess: nno  
+wrong guess: ang  
+wrong guess: eng  
+wrong guess: eng  
+wrong guess: eng  
+wrong guess: ang  
+wrong guess: ang  
+wrong guess: ang  
+wrong guess: swe  
+wrong guess: swe  
+wrong guess: swe  
+wrong guess: swe  
+wrong guess: swe  
+wrong guess: swe  
+wrong guess: swe  
+wrong guess: nno  
+wrong guess: nno  
+wrong guess: ang  
+wrong guess: ang  
+wrong guess: ang  
+wrong guess: swe  
+wrong guess: swe  
+wrong guess: pol  
+wrong guess: nno  
+wrong guess: nno  
+wrong guess: swe  
+wrong guess: nno  
+wrong guess: ang  
+wrong guess: ang  
+wrong guess: ang  
+wrong guess: ang  
+wrong guess: swe  
+wrong guess: pol  
+wrong guess: ang  
+wrong guess: swe  
+Complete failure!
+
 
